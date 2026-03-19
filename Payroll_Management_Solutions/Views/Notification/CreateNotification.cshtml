@@ -1,0 +1,34 @@
+﻿@model Notifications
+
+<form asp-action="CreateNotification" method="post">
+    <div>
+        <label>Title</label>
+        <input asp-for="Title" class="form-control" />
+    </div>
+
+    <div>
+        <label>Message</label>
+        <textarea asp-for="Message" class="form-control"></textarea>
+    </div>
+
+    <div>
+        <label>Notification Type</label>
+        <select asp-for="NotificationType">
+            <option>General</option>
+            <option>Holiday</option>
+            <option>Birthday</option>
+            <option>Announcement</option>
+        </select>
+    </div>
+
+    <div>
+        <label>Select Employees</label><br />
+        @foreach (var emp in ViewBag.Employees)
+        {
+            <input type="checkbox" name="employeeIds" value="@emp.EmployeeId" />
+            @emp.Name <br />
+        }
+    </div>
+
+    <button type="submit" class="btn btn-primary">Send Notification</button>
+</form>

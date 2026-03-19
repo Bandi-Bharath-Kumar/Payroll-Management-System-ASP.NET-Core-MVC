@@ -1,0 +1,23 @@
+﻿<li class="nav-item dropdown">
+    <a class="nav-link" data-bs-toggle="dropdown">
+        🔔 <span class="badge bg-danger">@ViewBag.UnreadCount</span>
+    </a>
+
+    <ul class="dropdown-menu dropdown-menu-end">
+        @foreach (var item in Model)
+        {
+            <li class="dropdown-item">
+                <strong>@item.Title</strong><br />
+                <small>@item.Message</small>
+            </li>
+        }
+
+        <li><hr class="dropdown-divider" /></li>
+        <li>
+            <a class="dropdown-item text-center"
+               href="/Notification/MyNotifications">
+                View All
+            </a>
+        </li>
+    </ul>
+</li>

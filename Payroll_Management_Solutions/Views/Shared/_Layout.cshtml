@@ -1,0 +1,377 @@
+@* @using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var visitorCount = HttpContextAccessor.HttpContext.Session.GetInt32("VisitorCount") ?? 0;
+} *@
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    var visitorCount = HttpContextAccessor.HttpContext.Session.GetInt32("VisitorCount") ?? 0;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] -Payroll Management</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css" />
+
+    <!-- Toastr -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+
+    <!-- Site CSS -->
+    <link rel="stylesheet" href="~/css/site.css" />
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        .page-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header-fixed {
+            flex-shrink: 0;
+        }
+
+        .content-scroll {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .footer-fixed {
+            flex-shrink: 0;
+        }
+    </style>
+
+
+</head>
+
+<body>
+    <div class="page-wrapper">
+
+        <!-- HEADER (STATIC) -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+
+                <!-- BRAND -->
+                @if (User.Identity.IsAuthenticated)
+                {
+                    if (User.IsInRole("Admin"))
+                    {
+                        <a class="navbar-brand" asp-controller="Dashboard" asp-action="AdminDashboard">
+                            Payroll Management
+                        </a>
+                    }
+                    else if (User.IsInRole("HR"))
+                    {
+                        <a class="navbar-brand" asp-controller="Dashboard" asp-action="HRDashboard">
+                            Payroll Management
+                        </a>
+                    }
+                    else if (User.IsInRole("Employee"))
+                    {
+                        <a class="navbar-brand" asp-controller="Dashboard" asp-action="EmployeeDashboard">
+                            Payroll Management
+                        </a>
+                    }
+                }
+                else
+                {
+                    <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                        Payroll Management
+                    </a>
+                }
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+
+                    <!-- LEFT MENU -->
+                    <ul class="navbar-nav me-auto">
+
+                        @* PUBLIC MENU *@
+                        @if (!User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="About">About</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Features">Features</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Terms">Terms</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Contact">Contact</a>
+                            </li>
+
+
+                        }
+
+                        @* ADMIN MENU *@
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Employees" asp-action="Index">Employees</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Payroll" asp-action="Index">Payroll</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Attendance" asp-action="Index">Attendance</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Events" asp-action="Index">Events</a>
+                            </li>
+                        }
+                        @* HR MENU *@
+                        else if (User.IsInRole("HR"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Employees" asp-action="Index">Employees</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Payroll" asp-action="Index">Payroll</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Attendance" asp-action="Index">Attendance</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Events" asp-action="Index">Events</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Leave" asp-action="Index">Leave</a>
+                            </li>
+                        }
+
+                        @* EMPLOYEE MENU *@
+                        else if (User.IsInRole("Employee"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Attendance" asp-action="Index">My Attendance</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Payroll" asp-action="Index">My Payroll</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Events" asp-action="Index">Events</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Leave" asp-action="MyRequests">My Leave</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Employees" asp-action="MyProfile">My Profile</a>
+                            </li>
+                        }
+                    </ul>
+                    <!--variable declaration-->
+                    @{
+                        var fullName = User.FindFirst("FullName")?.Value ?? User.Identity.Name;
+                        var firstName = (fullName ?? string.Empty).Split(' ')[0];
+                    }
+
+                    <!-- RIGHT MENU -->
+                    <ul class="navbar-nav ms-auto">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            @* var fullName = User.FindFirst("FullName")?.Value ?? User.Identity.Name;
+                            var firstName = (fullName ?? string.Empty).Split(' ')[0]; *@
+                            <div id="notificationBell"></div>
+                            <li class="nav-item">
+                                <span class="navbar-text text-white me-3">
+                                    Hello, @firstName
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <form method="post" asp-controller="Account" asp-action="Logout">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-light btn-sm">
+                                        Logout
+                                    </button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item me-2">
+                                <a class="btn btn-outline-light btn-sm"
+                                   asp-controller="Account" asp-action="Login">
+                                    Login
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="btn btn-warning btn-sm"
+                                   asp-controller="Home" asp-action="Maintainance">
+                                    Request Access
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- MIDDLE CONTENT (SCROLL ONLY HERE) -->
+        <main class="content-scroll">
+            <div class="container mt-4">
+                @RenderBody()
+            </div>
+        </main>
+
+        <!-- FOOTER (STATIC) -->
+        <footer class="border-top footer mt-0">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center py-3">
+
+                    <!-- Left -->
+                    <div>
+                        <a class="text-muted text-decoration-none"
+                           asp-controller="Home"
+                           asp-action="Privacy">
+                            Privacy
+                        </a>
+                    </div>
+
+                    <!-- Middle -->
+                    <div class="text-center small">
+                        © 2025 Payroll Management Solutions
+                        <span class="mx-2">|</span>
+                        <i class="bi bi-eye"></i>
+                        Visitors: <strong>@visitorCount</strong>
+                    </div>
+
+                    <!-- Right -->
+                    <div>
+                        <a class="text-muted text-decoration-none"
+                           asp-controller="Home"
+                           asp-action="SiteMap">
+                            Site Map
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </footer>
+
+
+    </div>
+    <partial name="_CookieConsentPopup" />
+
+
+    <!-- ================= SCRIPTS (ORDER IS CRITICAL) ================= -->
+    <!-- jQuery FIRST -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+
+    <!-- DataTables Buttons -->
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+
+    <!-- Export dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+    <!-- Toastr -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <script>
+             $(function () {
+                $("#notificationBell").load("/Notification/NotificationBell");
+            });
+        toastr.options = {
+            positionClass: "toast-top-right",
+            timeOut: 3000,
+            closeButton: true,
+            progressBar: true
+        };
+
+        (function () {
+
+            // Only run if a section is selected and NOT already on about
+            const params = new URLSearchParams(window.location.search);
+            const section = params.get("section");
+
+            // If we are on Home with a section specified, smoothly scroll to the dynamic section block
+            if (section) {
+                const target = document.getElementById("home-section-block");
+                if (target) {
+                    target.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            }
+
+            // if (section && section !== "about") {
+            if (section && section !== "about" && !document.hidden) {
+
+
+                let idleTimer;
+
+                const goToAbout = () => {
+                    window.location.href = "/?section=about";
+                };
+
+                const resetTimer = () => {
+                    clearTimeout(idleTimer);
+                    idleTimer = setTimeout(goToAbout, 15000); // 15 seconds
+                };
+
+                // Detect user activity
+                ["mousemove", "keydown", "click", "scroll"].forEach(event => {
+                    document.addEventListener(event, resetTimer, true);
+                });
+
+                // Start timer
+                resetTimer();
+            }
+
+        })();
+    </script>
+
+
+
+    <!-- Toast messages -->
+    @if (TempData["Success"] != null)
+    {
+        <script>toastr.success("@TempData["Success"]");</script>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <script>toastr.error("@TempData["Error"]");</script>
+    }
+
+    @if (!ViewData.ModelState.IsValid &&
+        ViewData.ModelState.Values.Any(v => v.Errors.Count > 0))
+    {
+        <script>toastr.error("Form validation failed. Please check the inputs.");</script>
+    }
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

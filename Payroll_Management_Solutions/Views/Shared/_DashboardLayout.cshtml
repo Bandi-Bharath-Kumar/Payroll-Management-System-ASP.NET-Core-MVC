@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="dashboardApp">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] -Payroll</title>
+
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+
+    <!-- Site CSS -->
+    <link rel="stylesheet" href="~/css/site.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>@* //for displaying charts in employeedashboard *@
+
+</head>
+
+<body ng-controller="mainCtrl">
+
+    @{
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+        var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+        var showSidebar =
+            (currentController == "Dashboard" && currentAction == "AdminDashboard") ||
+            (currentController == "Dashboard" && currentAction == "HrDashboard") ||
+            (currentController == "Dashboard" && currentAction == "EmployeeDashboard");
+    }
+
+    @if (!showSidebar)
+    {
+    <!-- TOP NAVBAR FOR AUTHENTICATED DASHBOARDS (HIDDEN ON HOME DASHBOARDS) -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <!-- BRAND -->
+            @if (User.IsInRole("Admin"))
+            {
+                <a class="navbar-brand" asp-controller="Dashboard" asp-action="AdminDashboard">
+                    Payroll Management
+                </a>
+            }
+            else if (User.IsInRole("HR"))
+            {
+                <a class="navbar-brand" asp-controller="Dashboard" asp-action="HRDashboard">
+                    Payroll Management
+                </a>
+            }
+            else if (User.IsInRole("Employee"))
+            {
+                <a class="navbar-brand" asp-controller="Dashboard" asp-action="EmployeeDashboard">
+                    Payroll Management
+                </a>
+            }
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#dashboardNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="dashboardNavbar">
+                <ul class="navbar-nav me-auto">
+                    @* ADMIN MENU *@
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Employees" asp-action="Index">Employees</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Payroll" asp-action="Index">Payroll</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Attendance" asp-action="Index">Attendance</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Events" asp-action="Index">Events</a>
+                        </li>
+                    }
+                    @* HR MENU *@
+                    else if (User.IsInRole("HR"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Employees" asp-action="Index">Employees</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Payroll" asp-action="Index">Payroll</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Attendance" asp-action="Index">Attendance</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Events" asp-action="Index">Events</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Leave" asp-action="Index">Leave</a>
+                        </li>
+                    }
+                    @* EMPLOYEE MENU *@
+                    else if (User.IsInRole("Employee"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Attendance" asp-action="Index">My Attendance</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Payroll" asp-action="Index">My Payroll</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Events" asp-action="Index">Events</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Leave" asp-action="MyRequests">My Leave</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Employees" asp-action="MyProfile">My Profile</a>
+                        </li>
+                    }
+                </ul>
+
+                <!-- RIGHT SIDE: GREETING + LOGOUT -->
+                @{
+                    var fullName = User.FindFirst("FullName")?.Value ?? User.Identity.Name;
+                    var firstName = (fullName ?? string.Empty).Split(' ')[0];
+                }
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span class="navbar-text text-white me-3">
+                            Hello, @firstName
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <form method="post" asp-controller="Account" asp-action="Logout" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-light btn-sm">
+                                Logout
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    }
+
+    @if (showSidebar)
+    {
+    <div class="sidebar" id="sidebar">
+
+        <!-- HEADER -->
+        <div class="sidebar-header">
+                <span class="sidebar-brand">CogniHub Payroll</span>
+            <button id="toggleSidebar" class="btn btn-sm btn-light">☰</button>
+        </div>
+
+
+        <!-- MENU -->
+        <div class="sidebar-menu">
+
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-controller="Dashboard" asp-action="AdminDashboard" class="nav-link" data-title="Dashboard">
+                    <span class="menu-icon">📊</span> <span>Dashboard</span>
+                </a>
+                <a asp-controller="Employees" asp-action="Index" class="nav-link" data-title="Employees">
+                    <span class="menu-icon">👥</span> <span>Employees</span>
+                </a>
+                <a asp-controller="Payroll" asp-action="Index" class="nav-link" data-title="Payroll">
+                    <span class="menu-icon">💰</span> <span>Payroll</span>
+                </a>
+                <a asp-controller="Attendance" asp-action="Index" class="nav-link" data-title="Attendance">
+                    <span class="menu-icon">🕒</span> <span>Attendance</span>
+                </a>
+                <a asp-controller="Events" asp-action="Index" class="nav-link" data-title="Events">
+                    <span class="menu-icon">📅</span> <span>Events</span>
+                </a>
+            }
+            else if (User.IsInRole("HR"))
+            {
+                <a asp-controller="Dashboard" asp-action="HrDashboard" class="nav-link" data-title="Dashboard">
+                    <span class="menu-icon">🧑‍💼</span> <span>HR Dashboard</span>
+                </a>
+                <a asp-controller="Employees" asp-action="Index" class="nav-link" data-title="Employees">
+                    <span class="menu-icon">👨‍👩‍👧‍👦</span> <span>Employees</span>
+                </a>
+                <a asp-controller="Attendance" asp-action="Index" class="nav-link" data-title="Attendance">
+                    <span class="menu-icon">🕒</span> <span>Attendance</span>
+                </a>
+                <a asp-controller="Events" asp-action="Index" class="nav-link" data-title="Events">
+                    <span class="menu-icon">📅</span> <span>Events</span>
+                </a>
+                <a asp-controller="Leave" asp-action="Index" class="nav-link" data-title="Leave Requests">
+                    <span class="menu-icon">📝</span> <span>Leave</span>
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Dashboard" asp-action="EmployeeDashboard" class="nav-link" data-title="Dashboard">
+                    <span class="menu-icon">👤</span> <span>My Dashboard</span>
+                </a>
+                <a asp-controller="Attendance" asp-action="Index" class="nav-link" data-title="Attendance">
+                    <span class="menu-icon">🕒</span> <span>My Attendance</span>
+                </a>
+                <a asp-controller="Payroll" asp-action="Index" class="nav-link" data-title="Payroll">
+                    <span class="menu-icon">💵</span> <span>My Payroll</span>
+                </a>
+                <a asp-controller="Events" asp-action="Index" class="nav-link" data-title="Events">
+                    <span class="menu-icon">📅</span> <span>Events</span>
+                </a>
+                <a asp-controller="Leave" asp-action="MyRequests" class="nav-link" data-title="Leave Requests">
+                    <span class="menu-icon">📝</span> <span>My Leave</span>
+                </a>
+            }
+
+        </div>
+
+        <!-- LOGOUT -->
+        <form method="post" asp-controller="Account" asp-action="Logout" class="sidebar-logout">
+            <button type="submit" class="btn btn-light"><span class="menu-icon">🚪</span> <span> Logout</span></button>
+        </form>
+
+    </div>
+    }
+
+
+
+    <div class="content @(showSidebar ? "" : "collapsed-content")">
+        @RenderBody()
+    </div>
+
+    <script>
+        angular.module('dashboardApp', [])
+            .controller('mainCtrl', function ($scope) { });
+
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const toggleBtn = document.getElementById("toggleSidebar");
+            const sidebar = document.getElementById("sidebar");
+            const content = document.querySelector(".content");
+
+            toggleBtn.addEventListener("click", function () {
+                sidebar.classList.toggle("collapsed");
+                content.classList.toggle("collapsed-content");
+            });
+
+            // Active menu highlight
+            const links = document.querySelectorAll('.sidebar .nav-link');
+            const currentPath = window.location.pathname.toLowerCase();
+
+            links.forEach(link => {
+                const href = link.getAttribute("href").toLowerCase();
+                if (currentPath.includes(href)) {
+                    link.classList.add("active");
+                }
+            });
+        });
+        const wrapper = document.getElementById("profileWrapper");
+        const container = document.getElementById("profileHoverContainer");
+
+        let loaded = false;
+
+        wrapper.addEventListener("mouseenter", () => {
+
+            container.style.display = "block";
+
+            if (loaded) return;
+
+            fetch('/Employees/MyProfile', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.text())
+            .then(html => {
+                container.innerHTML = html;
+                loaded = true;
+            });
+        });
+
+        wrapper.addEventListener("mouseleave", () => {
+            container.style.display = "none";
+        });        // const btn = document.getElementById("myProfileBtn");
+        // const container = document.getElementById("profileHoverContainer");
+
+        // let loaded = false;
+
+        // btn.addEventListener("mouseenter", function () {
+        //     if (loaded) return;
+
+        //     fetch('/Employees/MyProfile', {
+        //         headers: {
+        //             'X-Requested-With': 'XMLHttpRequest'
+        //         }
+        //     })
+        //     .then(res => res.text())
+        //     .then(html => {
+        //         container.innerHTML = html;
+        //         loaded = true;
+        //     });
+        // });
+
+
+
+    </script>
+
+    <!-- Bootstrap bundle (for navbar toggler) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Toastr -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+        toastr.options = {
+            positionClass: "toast-top-right",
+            timeOut: 3000,
+            closeButton: true,
+            progressBar: true
+        };
+    </script>
+
+    @if (TempData["Success"] != null)
+    {
+        <script>toastr.success("@TempData["Success"]");</script>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <script>toastr.error("@TempData["Error"]");</script>
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+@RenderSection("Scripts", required: false)
+</html>
+
+
+
+
+
+
+
+

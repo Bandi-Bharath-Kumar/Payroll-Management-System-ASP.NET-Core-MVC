@@ -1,0 +1,281 @@
+@model IEnumerable<Payroll_Management_Solutions.Models.Payrolls>
+@{
+    ViewData["Title"] = "Payroll Records";
+    var currentMonth = DateTime.Now.Month;
+    var currentYear = DateTime.Now.Year;
+}
+
+<h2>Payroll</h2>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Message"]
+    </div>
+}
+
+<p>
+    @if (User.IsInRole("HR"))
+    {
+        <a class="btn btn-primary" asp-action="Create">
+            Generate Payroll Manually
+        </a>
+
+        <a class="btn btn-success"
+           asp-action="Generate"
+           asp-route-month="@DateTime.Now.Month"
+           asp-route-year="@DateTime.Now.Year">
+            Auto-generate Payroll for This Month
+        </a>
+    }
+</p>
+
+
+<!-- Search box -->
+<div class="mb-3">
+    <input type="text" id="searchInput" class="form-control" placeholder="Search Employee, Month, or Year">
+</div>
+
+<style>
+    .current-month {
+        outline: 1px solid rgba(251, 191, 36, 0.9);
+        font-weight: bold;
+    }
+
+    tbody tr:hover {
+        background-color: rgba(79, 70, 229, 0.35) !important;
+    }
+
+    .badge-current {
+        background-color: #0d6efd;
+        color: white;
+        padding: 2px 6px;
+        font-size: 0.75rem;
+        border-radius: 4px;
+        margin-left: 5px;
+        cursor: default;
+    }
+
+    th.sortable {
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+    }
+
+        th.sortable::after {
+            content: "⬍";
+            font-size: 0.7rem;
+            position: absolute;
+            right: 8px;
+            color: #ccc;
+        }
+
+        th.sortable.asc::after {
+            content: "▲";
+            color: #000;
+        }
+
+        th.sortable.desc::after {
+            content: "▼";
+            color: #000;
+        }
+
+    .pagination {
+        display: flex;
+        list-style: none;
+        padding: 0;
+    }
+
+        .pagination li {
+            margin: 0 3px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+            .pagination li.active {
+                background-color: #0d6efd;
+                color: white;
+                border-color: #0d6efd;
+            }
+
+    .no-records {
+        text-align: center;
+        font-style: italic;
+        color: #888;
+        margin-top: 10px;
+    }
+</style>
+
+<table id="payrollTable" class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th class="sortable">Employee</th>
+            <th class="sortable">Month</th>
+            <th class="sortable">Year</th>
+            <th>Basic Salary</th>
+            <th>Present Days</th>
+            <th>Gross Salary</th>
+            <th>Deductions</th>
+            <th>Net Salary</th>
+            <th>Status</th>
+            <th>Action</th>
+
+        </tr>
+    </thead>
+    <tbody id="payrollBody">
+        @foreach (var pay in Model)
+        {
+            var isCurrentMonth = pay.Month == currentMonth && pay.Year == currentYear;
+            var fullMonthName = new DateTime(pay.Year, pay.Month, 1).ToString("MMMM yyyy");
+            var monthName = new DateTime(pay.Year, pay.Month, 1).ToString("MMMM");
+
+            <tr class="@(isCurrentMonth ? "current-month" : "")">
+                <td>@pay.Employee.FullName</td>
+                <td>
+                    @monthName
+                    @if (isCurrentMonth)
+                    {
+                        <span class="badge-current" title="@fullMonthName">Current Month</span>
+                    }
+                </td>
+                <td>@pay.Year</td>
+                <td>@pay.BasicSalary.ToString("C")</td>
+                <td>@pay.PresentDays</td>
+                <td>@pay.GrossSalary.ToString("C")</td>
+                <td>@pay.Deductions.ToString("C")</td>
+                <td>@pay.NetSalary.ToString("C")</td>
+                <td>
+                    @if (pay.IsApproved)
+                    {
+                        <span class="badge bg-success">Approved</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">Pending</span>
+                    }
+                </td>
+
+                <td>
+                    @if (User.IsInRole("Admin") && !pay.IsApproved)
+                    {
+                        <a asp-action="Approve"
+                           asp-route-id="@pay.PayrollId"
+                           class="btn btn-success btn-sm">
+                            Approve
+                        </a>
+                    }
+
+                    @if (pay.IsApproved)
+                    {
+                        <a asp-action="DownloadPayslip"
+                           asp-route-id="@pay.PayrollId"
+                           class="btn btn-outline-primary btn-sm ms-1">
+                            Payslip
+                        </a>
+                    }
+                </td>
+
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p id="noRecords" class="no-records" style="display:none;">No records found.</p>
+
+<!-- Pagination controls -->
+<ul id="pagination" class="pagination"></ul>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const tbody = document.getElementById("payrollBody");
+        const allRows = Array.from(tbody.querySelectorAll("tr"));
+        const rowsPerPage = 10;
+        let currentPage = 1;
+        const pagination = document.getElementById("pagination");
+        const noRecords = document.getElementById("noRecords");
+
+        // Separate current month row
+        // let currentMonthRow = allRows.find(r => r.classList.contains("current-month"));
+        // let otherRows = allRows.filter(r => !r.classList.contains("current-month"));
+       let currentMonthRows = allRows.filter(r => r.classList.contains("current-month"));
+       let otherRows = allRows.filter(r => !r.classList.contains("current-month"));
+
+            function displayRows(page) {
+        tbody.innerHTML = "";
+
+        const filterText = document.getElementById("searchInput").value.toLowerCase();
+
+        // Show ALL current month rows
+        currentMonthRows.forEach(row => {
+            if (row.innerText.toLowerCase().includes(filterText)) {
+                row.style.opacity = 1;
+                tbody.appendChild(row);
+            }
+        });
+
+        // Filter remaining rows
+        let filteredRows = otherRows.filter(r =>
+            r.innerText.toLowerCase().includes(filterText)
+        );
+
+        const start = (page - 1) * rowsPerPage;
+        const paginatedRows = filteredRows.slice(start, start + rowsPerPage);
+        paginatedRows.forEach(r => tbody.appendChild(r));
+
+        noRecords.style.display = tbody.children.length === 0 ? "" : "none";
+
+        updatePagination(filteredRows.length, page);
+    }
+
+
+        function updatePagination(totalRows, activePage) {
+            const pageCount = Math.ceil(totalRows / rowsPerPage);
+            pagination.innerHTML = "";
+            if (pageCount <= 1) return;
+
+            for (let i = 1; i <= pageCount; i++) {
+                const li = document.createElement("li");
+                li.textContent = i;
+                li.classList.toggle("active", i === activePage);
+                li.addEventListener("click", () => {
+                    currentPage = i;
+                    displayRows(currentPage);
+                });
+                pagination.appendChild(li);
+            }
+        }
+
+        // Sorting
+        const table = document.getElementById("payrollTable");
+        const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent;
+        const comparer = (idx, asc) => (a, b) => ((v1, v2) =>
+            v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2)
+            ? v1 - v2
+            : v1.toString().localeCompare(v2)
+        )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+
+        table.querySelectorAll("th.sortable").forEach(th => {
+            th.addEventListener("click", function () {
+                const idx = Array.from(th.parentNode.children).indexOf(th);
+                const asc = !th.classList.contains("asc");
+
+                table.querySelectorAll("th.sortable").forEach(h => h.classList.remove("asc", "desc"));
+                th.classList.toggle("asc", asc);
+                th.classList.toggle("desc", !asc);
+
+                otherRows.sort(comparer(idx, asc));
+                displayRows(1);
+            });
+        });
+
+        // Search filter
+        document.getElementById("searchInput").addEventListener("keyup", function () {
+            displayRows(1);
+        });
+
+        // Initial display
+        displayRows(currentPage);
+    });
+</script>

@@ -1,0 +1,12 @@
+﻿<h3>My Notifications</h3>
+
+@foreach (var item in Model)
+{
+    <div class="card mb-2 @(item.IsRead ? "" : "border-primary")">
+        <div class="card-body">
+            <h5>@item.Title</h5>
+            <p>@item.Message</p>
+            <small>@item.CreatedDate</small>
+        </div>
+    </div>
+}

@@ -1,0 +1,47 @@
+﻿<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">Site Map</h1>
+        <p class="text-muted">
+            Quick access to all major sections of XYZ Payroll Management System
+        </p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Public Pages -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="fw-semibold">🌐 Public Pages</h5>
+                    <ul class="list-unstyled mt-3">
+                        <li><a asp-controller="Home" asp-action="Index">Home</a></li>
+                        <li><a asp-controller="Home" asp-action="About">About Us</a></li>
+                        <li><a asp-controller="Home" asp-action="Features">Features</a></li>
+                        <li><a asp-controller="Home" asp-action="Contact">Contact</a></li>
+                        <li><a asp-controller="Home" asp-action="Privacy">Privacy Policy</a></li>
+                        <li><a asp-controller="Home" asp-action="Terms">Terms & Conditions</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secure Pages -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="fw-semibold">🔐 Secure Pages</h5>
+                    <ul class="list-unstyled mt-3">
+                        <li>Login</li>
+                        <li>Admin Dashboard</li>
+                        <li>Employee Dashboard</li>
+                        <li>Payslip Management</li>
+                        <li>Reports & Approvals</li>
+                    </ul>
+                    <p class="text-muted mt-3 small">
+                        Secure pages are accessible only to authorized users
+                        based on assigned roles.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

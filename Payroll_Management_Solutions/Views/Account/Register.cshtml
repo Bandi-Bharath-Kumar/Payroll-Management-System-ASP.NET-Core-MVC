@@ -1,0 +1,31 @@
+﻿@model Payroll_Management_Solutions.Models.RegisterViewModel
+
+<h2 class="text-center">Register</h2>
+
+<form asp-action="Register" method="post" class="w-50 mx-auto">
+    <div class="mb-3">
+        <label>Email</label>
+        <input asp-for="Email" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Password</label>
+        <input asp-for="Password" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Confirm Password</label>
+        <input asp-for="ConfirmPassword" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Select Role</label>
+        <select asp-for="Role" class="form-control">
+           @*  <option value="Admin">Admin</option> *@
+            <option value="HR">HR</option>
+            <option value="Employee">Employee</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Register</button>
+</form>

@@ -1,0 +1,83 @@
+@{
+    var consent = Context.Request.Cookies["CookieConsent"];
+}
+
+@if (string.IsNullOrEmpty(consent))
+{
+    <div id="cookieOverlay" class="cookie-overlay">
+        <div class="cookie-box">
+
+            <p class="mb-0">
+                <strong>Cookies</strong>: We use cookies and related technologies to help identify you and your devices,
+                operate our site, enhance your experience, and perform basic analytics. You can read more in our Privacy Policy.
+            </p>
+
+            <button onclick="acceptCookies()" class="cookie-btn">
+                ACCEPT COOKIES
+            </button>
+
+        </div>
+    </div>
+}
+
+<style>
+
+    .cookie-overlay {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        padding: 0 1rem 1rem;
+        pointer-events: none;
+        z-index: 9999;
+    }
+
+    .cookie-box {
+        pointer-events: auto;
+        background: #ffffff;
+        max-width: 820px;
+        width: 100%;
+        padding: 18px 22px;
+        border-radius: 10px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+        font-size: 14px;
+    }
+
+        .cookie-box p {
+            font-size: 13px;
+            color: #555;
+        }
+
+    .cookie-btn {
+        margin-top: 12px;
+        padding: 8px 18px;
+        border: none;
+        border-radius: 999px;
+        background: #111827;
+        color: #ffffff;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        float: right;
+    }
+
+        .cookie-btn:hover {
+            background: #000000;
+        }
+
+</style>
+
+<script>
+
+    function acceptCookies(){
+
+        document.cookie = "CookieConsent=Accepted; path=/; max-age=" + 60*60*24*365;
+
+        document.getElementById("cookieOverlay").style.display="none";
+    }
+
+</script>

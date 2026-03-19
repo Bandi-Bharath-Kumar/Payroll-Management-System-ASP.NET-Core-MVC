@@ -1,0 +1,71 @@
+﻿@model Payroll_Management_Solutions.Models.Payrolls
+@{
+    ViewData["Title"] = "Generate Payroll";
+}
+
+<h2>Generate Payroll</h2>
+
+<!-- 🔴 SHOW MODEL-LEVEL VALIDATION ERRORS -->
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<div class="alert alert-info">
+    <strong>Note:</strong> This page generates payroll for a <b>single employee only</b>.
+    To generate payroll for all employees for a month, use
+    <b>Auto Generate Payroll</b>.
+</div>
+
+<form asp-action="Create" method="post">
+
+    <div class="form-group">
+        <label>Employee</label>
+        <select asp-for="EmployeeId" class="form-control">
+            <option value="">-- Select --</option>
+            @foreach (var emp in ViewBag.Employees)
+            {
+                <option value="@emp.EmployeeId">
+                    @emp.FullName @(emp.HasPayroll ? "(Already Generated)" : "")
+                </option>
+            }
+        </select>
+        <span asp-validation-for="EmployeeId" class="text-danger"></span>
+    </div>
+
+
+    <div class="form-group">
+        <label>Month</label>
+        <input asp-for="Month" type="number" class="form-control" min="1" max="12" />
+        <span asp-validation-for="Month" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label>Year</label>
+        <input asp-for="Year" type="number" class="form-control" min="2023" />
+        <span asp-validation-for="Year" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label>Total Working Days</label>
+        <input asp-for="TotalWorkingDays" type="number" class="form-control" />
+        <span asp-validation-for="TotalWorkingDays" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label>Present Days</label>
+        <input asp-for="PresentDays" type="number" class="form-control" />
+        <span asp-validation-for="PresentDays" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label>Deductions</label>
+        <input asp-for="Deductions" type="number" class="form-control" />
+        <span asp-validation-for="Deductions" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">Generate Payroll</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

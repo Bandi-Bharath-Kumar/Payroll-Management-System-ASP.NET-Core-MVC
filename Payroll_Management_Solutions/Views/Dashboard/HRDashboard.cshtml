@@ -1,0 +1,129 @@
+@model Payroll_Management_Solutions.Models.ViewModels.HrDashboardVM
+@{
+    ViewData["Title"] = "HR Dashboard";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+         <h2 class="text-end">
+            @(User.IsInRole("Admin") ? "📊 Admin Dashboard" :
+                        User.IsInRole("HR") ? "🏢HR Dashboard" :
+                        "👥Employee Dashboard")
+        </h2>
+        @{
+            var fullName = User.FindFirst("FullName")?.Value ?? User.Identity.Name;
+            var firstName = (fullName ?? string.Empty).Split(' ')[0];
+        }
+        <h3>👋 Welcome, @firstName!</h3>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card stat-card-employees">
+                <div class="stat-label">Total Employees</div>
+                <div class="stat-value">@Model.TotalEmployees</div>
+                <div class="stat-subtext">All employees (active + inactive)</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card stat-card-hr">
+                <div class="stat-label">Active Employees</div>
+                <div class="stat-value">@Model.ActiveEmployees</div>
+                <div class="stat-subtext">Currently active</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Management shortcuts -->
+        <div class="col-lg-3 col-md-6">
+            <div class="card dashboard-shortcut-card shadow rounded-2xl h-100 text-center p-3">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                    <i class="bi bi-people-fill fs-1 mb-3 text-primary"></i>
+                    <h5>Employees</h5>
+                    <p>View and manage all employees, roles, and details.</p>
+                    <a asp-controller="Employees" asp-action="Index" class="btn btn-primary mt-auto">Manage Employees</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card dashboard-shortcut-card shadow rounded-2xl h-100 text-center p-3">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                    <i class="bi bi-calendar-check fs-1 mb-3 text-warning"></i>
+                    <h5>Attendance</h5>
+                    <p>Mark and track attendance, leaves, and working hours.</p>
+                    <a asp-controller="Attendance" asp-action="Index" class="btn btn-warning mt-auto">Manage Attendance</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card dashboard-shortcut-card shadow rounded-2xl h-100 text-center p-3">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                    <i class="bi bi-currency-dollar fs-1 mb-3 text-success"></i>
+                    <h5>Payroll</h5>
+                    <p>Manage salary, bonuses, and deductions for employees.</p>
+                    <a asp-controller="Payroll" asp-action="Index" class="btn btn-success mt-auto">Manage Payroll</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card dashboard-shortcut-card shadow rounded-2xl h-100 text-center p-3">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                    <i class="bi bi-file-earmark-text fs-1 mb-3 text-info"></i>
+                    <h5>Leave</h5>
+                    <p>Review, approve, or reject employee leave requests.</p>
+                    <a asp-controller="Leave" asp-action="Index" class="btn btn-info mt-auto">Manage Leave</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Read-only employee list -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="mb-3">Employees</h4>
+                    <table class="table table-hover align-middle table-dark-custom">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Department</th>
+                                <th>Designation</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var e in Model.Employees)
+                            {
+                                <tr>
+                                    <td>@e.FullName</td>
+                                    <td>@e.Email</td>
+                                    <td>@(string.IsNullOrEmpty(e.Department) ? "-" : e.Department)</td>
+                                    <td>@(string.IsNullOrEmpty(e.Designation) ? "-" : e.Designation)</td>
+                                    <td>@e.Role</td>
+                                    <td>
+                                        @if (e.IsActive)
+                                        {
+                                            <span class="badge bg-success">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Inactive</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

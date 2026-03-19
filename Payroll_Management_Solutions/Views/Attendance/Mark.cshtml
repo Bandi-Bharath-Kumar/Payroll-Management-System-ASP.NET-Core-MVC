@@ -1,0 +1,44 @@
+@model List<Payroll_Management_Solutions.Models.Employees>
+
+<h2>Mark Attendance</h2>
+
+<form asp-action="Mark" method="post">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Employee</th>
+                <th>Status</th>
+                <th>In Time</th>
+                <th>Out Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <tr>
+                    <td>
+                        @Model[i].FullName
+                        <input type="hidden" name="[@i].EmployeeId" value="@Model[i].EmployeeId" />
+                        <input type="hidden" name="[@i].Date" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                    </td>
+                    <td>
+                        <select name="[@i].Status" class="form-control">
+                            <option value="Present">Present</option>
+                            <option value="Absent">Absent</option>
+                            <option value="Leave">Leave</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="time" name="[@i].InTime" class="form-control" />
+                    </td>
+                    <td>
+                        <input type="time" name="[@i].OutTime" class="form-control" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-success">Save Attendance</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

@@ -1,0 +1,161 @@
+@model Payroll_Management_Solutions.Models.ViewModels.EmployeeDashboardPageVM
+
+
+@{
+    ViewData["Title"] = "Employee Dashboard";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+@* <a asp-controller="Employees" asp-action="MyProfile" class="btn btn-primary">My Profile</a> *@
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        
+        <h2 class="mb-0 text-end">
+            @(User.IsInRole("Admin") ? "📊 Admin Dashboard" :
+                        User.IsInRole("HR") ? "🏢 HR Dashboard" :
+                        "👥 Employee Dashboard")
+        </h2>
+        <div class="d-flex align-items-center gap-2">
+            <div class="profile-hover-wrapper" id="profileWrapper">
+                <a id="myProfileBtn"
+                   asp-controller="Employees"
+                   asp-action="MyProfile"
+                   class="btn btn-primary btn-sm">
+                    👤 My Profile
+                </a>
+
+                <div id="profileHoverContainer" class="profile-hover-container"></div>
+            </div>
+
+            @{
+                var fullName = User.FindFirst("FullName")?.Value ?? User.Identity.Name;
+                var firstName = (fullName ?? string.Empty).Split(' ')[0];
+            }
+            <h3 class="mb-0">👋 Welcome, @firstName!</h3>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- My Attendance Card -->
+        <div class="col-md-3">
+            <div class="card dashboard-shortcut-card shadow rounded-2xl h-100 text-center p-3">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                    <i class="bi bi-calendar-check fs-1 mb-3 text-info"></i>
+                    <h5>My Attendance</h5>
+                    <p>View your attendance, check-ins, and leaves.</p>
+                    <a asp-controller="Attendance" asp-action="Index" class="btn btn-info mt-auto">View Attendance</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Payroll Card -->
+        <div class="col-md-3">
+            <div class="card dashboard-shortcut-card shadow rounded-2xl h-100 text-center p-3">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                    <i class="bi bi-currency-dollar fs-1 mb-3 text-success"></i>
+                    <h5>My Payroll</h5>
+                    <p>Check salary slips, bonuses, and deductions.</p>
+                    <a asp-controller="Payroll" asp-action="Index" class="btn btn-success mt-auto">View Payroll</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal Info Card -->
+        <div class="col-md-3">
+            <div class="card dashboard-shortcut-card shadow rounded-2xl h-100 text-center p-3">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                    <i class="bi bi-person-circle fs-1 mb-3 text-primary"></i>
+                    <h5>Profile</h5>
+                    <p>View and update your personal details.</p>
+                    <a asp-controller="Employees" asp-action="MyProfile" asp-route-id="@User.FindFirst("EmployeeId")?.Value"
+                       class="btn btn-primary mt-auto">View Profile</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leave Requests Card -->
+        <div class="col-md-3">
+            <div class="card dashboard-shortcut-card shadow rounded-2xl h-100 text-center p-3">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                    <i class="bi bi-file-earmark-text fs-1 mb-3 text-warning"></i>
+                    <h5>Leave Requests</h5>
+                    <p>Request leave and track approval status.</p>
+                    <a asp-controller="Leave" asp-action="MyRequests" class="btn btn-warning mt-auto">View Leave</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- ========================= -->
+    <!-- CHARTS SECTION -->
+    <!-- ========================= -->
+    <div class="row mt-4">
+        <!-- Attendance Chart -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-3">
+                <h5 class="text-center">Monthly Attendance</h5>
+                <canvas id="attendanceChart" height="120"></canvas>
+            </div>
+        </div>
+
+        <!-- Payroll Chart -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm p-3">
+                <h5 class="text-center">Salary Overview</h5>
+                <canvas id="payrollChart" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script>
+    // =========================
+    // ATTENDANCE CHART (REAL DATA)
+    // =========================
+    const attendanceLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Dashboard.AttendanceLabels));
+    const attendanceCounts = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Dashboard.AttendanceCounts));
+
+    const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
+    new Chart(attendanceCtx, {
+        type: 'bar',
+        data: {
+            labels: attendanceLabels,
+            datasets: [{
+                label: 'Days',
+                data: attendanceCounts,
+                backgroundColor: '#0d6efd'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+
+    // =========================
+    // PAYROLL CHART (REAL DATA)
+    // =========================
+    const payrollMonths = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Dashboard.PayrollMonths));
+    const payrollAmounts = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Dashboard.PayrollAmounts));
+
+    const payrollCtx = document.getElementById('payrollChart').getContext('2d');
+    new Chart(payrollCtx, {
+        type: 'line',
+        data: {
+            labels: payrollMonths,
+            datasets: [{
+                label: 'Net Salary',
+                data: payrollAmounts,
+                fill: true,
+                tension: 0.3,
+                borderColor: '#198754',
+                backgroundColor: 'rgba(25, 135, 84, 0.2)'
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+</script>

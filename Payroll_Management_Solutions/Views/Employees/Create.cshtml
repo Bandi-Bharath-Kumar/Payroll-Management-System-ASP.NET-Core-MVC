@@ -1,0 +1,53 @@
+﻿@model Payroll_Management_Solutions.Models.Employees
+
+<div class="container mt-4">
+    <div class="card shadow rounded-2xl">
+        <div class="card-header bg-primary text-white">➕ Add New Employee</div>
+
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <div class="row p-3">
+                <div class="col-md-6 form-group">
+                    <label>Full Name</label>
+                    <input asp-for="FullName" class="form-control" />
+                    <span asp-validation-for="FullName" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 form-group">
+                    <label>Email</label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 form-group">
+                    <label>Department</label>
+                    <input asp-for="Department" class="form-control" />
+                </div>
+                <div class="col-md-6 form-group">
+                    <label>Designation</label>
+                    <input asp-for="Designation" class="form-control" />
+                </div>
+                <div class="col-md-6 form-group">
+                    <label>Salary</label>
+                    <input asp-for="BasicSalary" class="form-control" />
+                </div>
+                <div class="col-md-6 form-group">
+                    <label>Role</label>
+                    <select asp-for="Role" class="form-control" asp-items="@(new SelectList(ViewBag.Roles))">
+                        <option value="">-- Select Role --</option>
+                    </select>
+                    <span asp-validation-for="Role" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="text-end p-3">
+                <button type="submit" class="btn btn-success">Save</button>
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

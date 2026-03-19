@@ -1,0 +1,37 @@
+@model IEnumerable<Payroll_Management_Solutions.Models.Attendances>
+@using Payroll_Management_Solutions.Models
+
+<table class="table table-bordered table-hover align-middle table-dark-custom">
+    <thead class="table-dark">
+        <tr>
+            <th>Date</th>
+            <th>Status</th>
+            <th>In Time</th>
+            <th>Out Time</th>
+            <th class="text-end">Working Hours</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Date.ToString("dd-MMM-yyyy")</td>
+                <td>
+                    @if (item.Status == AttendanceStatus.Present)
+                    {
+                        <span class="badge bg-success">Present</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Absent</span>
+                    }
+                </td>
+                <td>@(item.InTime?.ToString(@"hh\:mm") ?? "-")</td>
+                <td>@(item.OutTime?.ToString(@"hh\:mm") ?? "-")</td>
+                <td class="text-end fw-bold">
+                    @item.WorkingHours.ToString("0.00") hrs
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
