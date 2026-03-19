@@ -38,6 +38,13 @@ This system helps organizations efficiently manage **employees, attendance, payr
 * Apply for Leave
 * Receive Notifications
 
+## ✨ Key Highlights
+- 🔐 Role-based Authentication (Admin, HR, Employee)
+- 📊 Real-time Payroll Processing
+- 📅 Attendance Tracking System
+- 📝 Leave Management Workflow
+- 🔔 Notification System
+
 ---
 
 # 🏗️ System Architecture
