@@ -7,7 +7,7 @@ This system helps organizations efficiently manage **employees, attendance, payr
 
 ## 📊 System Workflow Overview
 
-![Workflow](./docs/workflow.png)
+![Workflow](Payroll-Structure.jpeg)
 
 > The system supports **Admin, HR, and Employee workflows** with role-based access and operations.
 
